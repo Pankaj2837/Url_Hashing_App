@@ -2,7 +2,15 @@ import jwt from "jsonwebtoken";
 
 const protect = (req, res, next) => {
   let token;
-
+  if (
+    process.env.NODE_ENV === "development" &&
+    req.headers["x-load-test"] === "true"
+  ) {
+    // We set req.user to the raw number 1
+    // This way, 'const userId = req.user' in your controller results in userId = 1
+    req.user = 1;
+    return next();
+  }
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")

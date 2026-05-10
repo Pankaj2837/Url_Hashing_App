@@ -20,36 +20,49 @@ export const urlService = {
 
   async createShort(long_url, userId) {
     const pool = await getPoolForCode(userId.toString());
-
-    const insertResult = await pool
-      .request()
-      .input("long_url", sql.NVarChar, long_url)
-      .input("userId", sql.Int, userId).query(`
-        INSERT INTO URLs (long_url, user_id, clicks, created_at) 
-        OUTPUT INSERTED.id 
-        VALUES (@long_url, @userId, 0, GETDATE())
-      `);
-
-    const newDbId = insertResult.recordset[0].id;
-
-    const short_code = encode(newDbId);
-    await pool
-      .request()
-      .input("id", sql.Int, newDbId)
-      .input("short_code", sql.NVarChar, short_code)
-      .query("UPDATE URLs SET short_code = @short_code WHERE id = @id");
-
+    const transaction = new sql.Transaction(pool);
     try {
-      const multi = redisClient.multi();
-      multi.setEx(`url:${short_code}`, 86400, long_url);
-      multi.setnx(`clicks:${short_code}`, 0);
-      multi.sAdd(`user:${userId}:links`, short_code);
-      await multi.exec();
-    } catch (redisErr) {
-      console.error("Redis sync failed, but SQL is safe:", redisErr);
-    }
+      await transaction.begin();
 
-    return { short_code, long_url };
+      // Insert with a temporary UUID to satisfy the UNIQUE constraint on short_code
+      // This prevents the "Duplicate NULL" error during high-concurrency stress tests.
+      const insertResult = await transaction
+        .request()
+        .input("long_url", sql.NVarChar, long_url)
+        .input("userId", sql.Int, userId).query(`
+          INSERT INTO URLs (long_url, user_id, clicks, created_at, short_code) 
+          OUTPUT INSERTED.id 
+          VALUES (@long_url, @userId, 0, GETDATE(), LEFT(CAST(NEWID() AS NVARCHAR(36)), 10))
+        `);
+
+      const newDbId = insertResult.recordset[0].id;
+
+      const short_code = encode(newDbId);
+
+      // 3. Update the row with the actual Base62 short_code
+      await transaction
+        .request()
+        .input("id", sql.Int, newDbId)
+        .input("short_code", sql.NVarChar, short_code)
+        .query("UPDATE URLs SET short_code = @short_code WHERE id = @id");
+
+      await transaction.commit();
+      try {
+        const multi = redisClient.multi();
+        multi.setEx(`url:${short_code}`, 86400, long_url);
+        multi.set(`clicks:${short_code}`, "0", { NX: true });
+        multi.sAdd(`user:${userId}:links`, short_code);
+        await multi.exec();
+      } catch (redisErr) {
+        console.error("Redis sync failed, but SQL is safe:", redisErr);
+      }
+
+      return { short_code, long_url };
+    } catch (err) {
+      if (transaction) await transaction.rollback();
+      console.error("Shorten Controller Error:", err);
+      throw err;
+    }
   },
   async getUserUrls(userId) {
     const redisKey = `user:${userId}:links`;
