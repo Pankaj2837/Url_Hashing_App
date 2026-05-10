@@ -1,11 +1,11 @@
-const express = require("express");
-const router = express.Router();
-const { register, login } = require("../controllers/auth.controller");
-const { shorten, redirect } = require("../controllers/url.controller");
-const { protect } = require("../middleware/auth.middleware");
-const apiLimiter = require("../middleware/rateLimiter");
-const { getPoolForCode } = require("../config/sharding.config"); // Import this
+import express from "express";
+import { register, login } from "../controllers/auth.controller.js";
+import { shorten, redirect, getMyUrls } from "../controllers/url.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import apiLimiter from "../middleware/rateLimiter.js";
+import { getPoolForCode } from "../config/sharding.config.js";
 
+const router = express.Router();
 // Auth Routes
 router.post("/register", register);
 router.post("/login", login);
@@ -13,7 +13,8 @@ router.post("/login", login);
 // URL Routes
 router.post("/shorten", protect, apiLimiter, shorten);
 
-// The "Catch-All" route MUST be last
+router.get("/my-urls", protect, getMyUrls);
+
 router.get("/:shortCode", redirect);
 
-module.exports = router;
+export default router;

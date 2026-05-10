@@ -1,14 +1,13 @@
-const cron = require("node-cron");
-const { redisClient } = require("../config/redis.config");
-const sql = require("mssql");
-const { poolPromise } = require("../config/db.config");
+import cron from "node-cron";
+import { redisClient } from "../config/redis.config.js";
+import sql from "mssql";
+import { poolPromise } from "../config/db.config.js";
 
 const syncClicksToDb = async () => {
   try {
     console.log("🔄 Syncing analytics to SQL Server...");
     const pool = await poolPromise;
 
-    // 1. Find all keys that look like 'clicks:*'
     const keys = await redisClient.keys("clicks:*");
 
     for (const key of keys) {
@@ -16,8 +15,6 @@ const syncClicksToDb = async () => {
       const clickCount = await redisClient.get(key);
 
       if (clickCount > 0) {
-        // 2. Perform a Batch Update in SQL
-        // This updates the 'clicks' column by adding the new clicks
         await pool
           .request()
           .input("shortCode", sql.VarChar, shortCode)
@@ -27,7 +24,6 @@ const syncClicksToDb = async () => {
                         WHERE short_code = @shortCode
                     `);
 
-        // 3. Reset the counter in Redis for the next interval
         await redisClient.set(key, 0);
       }
     }
@@ -42,4 +38,4 @@ const startSyncJob = () => {
   cron.schedule("*/5 * * * *", syncClicksToDb);
 };
 
-module.exports = { startSyncJob, syncClicksToDb };
+export { startSyncJob, syncClicksToDb };

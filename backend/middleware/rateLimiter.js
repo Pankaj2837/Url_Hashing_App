@@ -1,12 +1,11 @@
-const { rateLimit } = require("express-rate-limit");
-const { RedisStore } = require("rate-limit-redis");
-const { redisClient } = require("../config/redis.config");
+import { rateLimit } from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import { redisClient } from "../config/redis.config.js";
 
 const apiLimiter = rateLimit({
-  // Store the counts in our Docker Redis
   store: new RedisStore({
     sendCommand: async (...args) => {
-      if (!redisClient.isOpen) await redisClient.connect(); // Safety check
+      if (!redisClient.isOpen) await redisClient.connect();
       return redisClient.sendCommand(args);
     },
   }),
@@ -16,8 +15,8 @@ const apiLimiter = rateLimit({
     message:
       "Too many URLs created from this IP, please try again after 15 minutes",
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  standardHeaders: true,
   legacyHeaders: false,
 });
 
-module.exports = apiLimiter;
+export default apiLimiter;

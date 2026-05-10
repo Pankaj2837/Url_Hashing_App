@@ -1,4 +1,4 @@
-const { sql, poolPromise } = require("../config/db.config");
+import { sql, poolPromise } from "../config/db.config.js";
 
 const createUser = async (username, email, passwordHash) => {
   const pool = await poolPromise;
@@ -23,4 +23,4 @@ const findUserByEmail = async (email) => {
   return result.recordset[0];
 };
 
-module.exports = { createUser, findUserByEmail };
+export { createUser, findUserByEmail };

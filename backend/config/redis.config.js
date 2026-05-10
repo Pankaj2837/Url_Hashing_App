@@ -1,4 +1,4 @@
-const redis = require("redis");
+import redis from "redis";
 
 const redisClient = redis.createClient({
   url: "redis://localhost:6379",
@@ -6,7 +6,6 @@ const redisClient = redis.createClient({
 
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
-// Professional practice: Connect immediately
 const connectRedis = async () => {
   if (!redisClient.isOpen) {
     await redisClient.connect();
@@ -14,4 +13,4 @@ const connectRedis = async () => {
   }
 };
 
-module.exports = { redisClient, connectRedis };
+export { redisClient, connectRedis };

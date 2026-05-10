@@ -1,6 +1,7 @@
 {
   "name": "url_shortener",
   "version": "1.0.0",
+  "type": "module",
   "description": "scalable url sortner app",
   "main": "server.js",
   "scripts": {

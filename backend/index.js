@@ -6,11 +6,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
-});
-
-app.get("/api/data", (req, res) => {
-  res.json({ message: "Hello from backend!" });
+  res.send("Backend is running!");
 });
 
 const PORT = 5000;

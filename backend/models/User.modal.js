@@ -1,8 +1,4 @@
-const { sql, poolPromise } = require("../config/db.config");
-
-/**
- * Creates a new user in the database
- */
+import { sql, poolPromise } from "../config/db.config.js";
 const createUser = async (username, email, passwordHash) => {
   try {
     const pool = await poolPromise;
@@ -15,8 +11,6 @@ const createUser = async (username, email, passwordHash) => {
                 OUTPUT inserted.id, inserted.username, inserted.email
                 VALUES (@username, @email, @passwordHash)
             `);
-
-    // Returns the created user (id, username, email)
     return result.recordset[0];
   } catch (err) {
     console.error("SQL Error in createUser:", err);
@@ -24,9 +18,6 @@ const createUser = async (username, email, passwordHash) => {
   }
 };
 
-/**
- * Finds a user by their email address
- */
 const findUserByEmail = async (email) => {
   try {
     const pool = await poolPromise;
@@ -35,7 +26,6 @@ const findUserByEmail = async (email) => {
       .input("email", sql.VarChar, email)
       .query("SELECT * FROM Users WHERE email = @email");
 
-    // Returns the user object if found, otherwise undefined
     return result.recordset[0];
   } catch (err) {
     console.error("SQL Error in findUserByEmail:", err);
@@ -43,7 +33,4 @@ const findUserByEmail = async (email) => {
   }
 };
 
-module.exports = {
-  createUser,
-  findUserByEmail,
-};
+export { createUser, findUserByEmail };

@@ -1,30 +1,26 @@
-const { sql, poolPromise } = require("../config/db.config");
-const { encode } = require("../utils/Encoder.util");
+import { sql, poolPromise } from "../config/db.config.js";
+import { encode } from "../utils/Encoder.util.js";
 
 const createShortUrl = async (longUrl, userId = null) => {
-  // 1. Wait for the pool to be ready
   const pool = await poolPromise;
 
-  // 2. Attach the transaction to THIS pool
   const transaction = new sql.Transaction(pool);
 
   try {
     await transaction.begin();
     const request = new sql.Request(transaction);
 
-    // Step 1: Insert to get the ID
     const result = await request
       .input("longUrl", sql.VarChar, longUrl)
       .input("userId", sql.Int, userId).query(`
-                INSERT INTO URLs (long_url, user_id, created_at) 
+                INSERT INTO URLs (long_url, user_id, created_at, created_by) 
                 OUTPUT inserted.id 
-                VALUES (@longUrl, @userId, GETDATE())
+                VALUES (@longUrl, @userId, GETDATE(), @userId)
             `);
 
     const newId = result.recordset[0].id;
     const shortCode = encode(newId);
 
-    // Step 2: Update with Short Code
     await request
       .input("id", sql.Int, newId)
       .input("shortCode", sql.VarChar, shortCode)
@@ -51,4 +47,4 @@ const getLongUrl = async (shortCode) => {
     throw err;
   }
 };
-module.exports = { createShortUrl, getLongUrl };
+export { createShortUrl, getLongUrl };

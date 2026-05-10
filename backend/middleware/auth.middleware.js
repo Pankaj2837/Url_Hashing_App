@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const protect = (req, res, next) => {
   let token;
@@ -10,8 +10,6 @@ const protect = (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Attach the userId to the request object so the next function can use it
       req.user = decoded.userId;
       next();
     } catch (error) {
@@ -24,4 +22,4 @@ const protect = (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+export { protect };

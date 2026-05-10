@@ -1,6 +1,6 @@
-const sql = require("mssql");
-require("dotenv").config();
-const HashRing = require("hashring");
+import sql from "mssql";
+import "dotenv/config";
+import HashRing from "hashring";
 /* ----------------This is sharding configuration file----------------
  * In a production environment, you would have multiple SQL Server instances (or databases) to distribute the load.
  * This file demonstrates how to set up connection pools for each shard and a simple consistent hashing mechanism to route requests.
@@ -91,30 +91,20 @@ const shardConfigs = {
   },
 };
 
-// 1. Create the Hash Ring
-// We pass the shard keys to the ring.
-// You can even give shards "weights" if one server is more powerful than others.
 const ring = new HashRing(Object.keys(shardConfigs));
-
-// 2. Initialize Connection Pools
 const pools = {};
 Object.keys(shardConfigs).forEach((shardKey) => {
   pools[shardKey] = new sql.ConnectionPool(shardConfigs[shardKey])
     .connect()
     .then((pool) => {
-      console.log(`✅ ${shardKey} Connected to Ring`);
+      console.log(` ${shardKey} Connected to Ring`);
       return pool;
     })
-    .catch((err) => console.error(`❌ ${shardKey} Connection Failed:`, err));
+    .catch((err) => console.error(` ${shardKey} Connection Failed:`, err));
 });
-
-/**
- * THE CONSISTENT HASHING LOGIC
- * The ring determines which shard owns the shortCode.
- */
 const getPoolForCode = async (shortCode) => {
   const assignedShardKey = ring.get(shortCode); // Finds the closest node on the ring
   return await pools[assignedShardKey];
 };
 
-module.exports = { getPoolForCode };
+export { getPoolForCode };

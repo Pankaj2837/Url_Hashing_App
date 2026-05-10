@@ -9,4 +9,4 @@ const encode = (num) => {
   return str || "0";
 };
 
-module.exports = { encode };
+export { encode };
