@@ -70,7 +70,7 @@ const baseConfig = {
   password: process.env.DB_PASSWORD,
   server: process.env.DB_SERVER,
   pool: {
-    max: 100,
+    max: 15,
     min: 0,
     idleTimeoutMillis: 30000,
   },

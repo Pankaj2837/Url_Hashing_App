@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import { ensureDatabaseExists, getAppPool } from "./config/db.js"; // Updated import
+import { ensureDatabaseExists, getAppPool } from "./config/db.js";
 import urlRoutes from "./routes/url.routes.js";
 import { connectRedis } from "./config/redis.config.js";
 import { startSyncJob } from "./services/sync.service.js";

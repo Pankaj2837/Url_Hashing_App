@@ -10,7 +10,7 @@ const baseConfig = {
     trustServerCertificate: true,
   },
   pool: {
-    max: 10,
+    max: 15,
     min: 0,
     idleTimeoutMillis: 30000,
   },

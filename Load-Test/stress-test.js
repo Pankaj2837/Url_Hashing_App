@@ -1,3 +1,4 @@
+/* WRITE REST
 import http from "k6/http";
 import { check, sleep } from "k6";
 
@@ -58,5 +59,39 @@ export default function () {
   });
 
   // 5. User Pacing
-  sleep(1);
+  // sleep(1);
+} */
+
+import http from "k6/http";
+import { check, sleep } from "k6";
+
+export const options = {
+  stages: [
+    { duration: "30s", target: 50 }, // Ramp-up to 50 concurrent users
+    { duration: "1m", target: 50 }, // Hold at 50 users (Stress phase)
+    { duration: "30s", target: 0 }, // Ramp-down
+  ],
+  thresholds: {
+    http_req_duration: ["p(95)<50"], // Strict SLA: 95% of read requests must be under 50ms!
+    http_req_failed: ["rate<0.01"],
+  },
+};
+
+export default function () {
+  const url = "http://localhost/api/url/my-urls";
+
+  const params = {
+    headers: {
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc3ODkyNTI0OSwiZXhwIjoxNzc4OTI4ODQ5fQ.vod1lBV2mWKJjrHxhM4CfIcO1WRMD_-mf1Zpvw2unhg",
+    },
+  };
+
+  // 2. Execute a GET request instead of a POST
+  const res = http.get(url, params);
+
+  // 3. Verify Redis is routing correctly
+  check(res, {
+    "status is 200": (r) => r.status === 200,
+  });
 }
