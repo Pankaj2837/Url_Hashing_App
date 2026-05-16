@@ -2,7 +2,7 @@ import axios from "axios";
 import { Navigate } from "react-router-dom";
 
 const instance = axios.create({
-  baseURL: "http://localhost:3000/api/url",
+  baseURL: "/api/url",
 });
 
 instance.interceptors.request.use(

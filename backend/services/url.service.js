@@ -88,11 +88,11 @@ export const urlService = {
         .request()
         .input("userId", sql.Int, userId)
         .query(
-          "SELECT short_code, long_url, clicks FROM URLs WHERE user_id = @userId",
+          "SELECT shortCode, originalUrl, clickCount FROM URLs WHERE userId = @userId",
         );
-
+      console.log("result", result);
       if (result.recordset.length > 0) {
-        const codes = result.recordset.map((u) => u.short_code);
+        const codes = result.recordset.map((u) => u.shortCode);
         await redisClient.sAdd(redisKey, codes);
         await redisClient.expire(redisKey, 3600); // 1 hour expiry
       }

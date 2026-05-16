@@ -1,12 +1,12 @@
 import cron from "node-cron";
 import { redisClient } from "../config/redis.config.js";
 import sql from "mssql";
-import { poolPromise } from "../config/db.config.js";
+import { getPoolPromise } from "../config/db.config.js";
 
 const syncClicksToDb = async () => {
   try {
     console.log("🔄 Syncing analytics to SQL Server...");
-    const pool = await poolPromise;
+    const pool = await getPoolPromise();
 
     const keys = await redisClient.keys("clicks:*");
 

@@ -1,8 +1,8 @@
-import { sql, poolPromise } from "../config/db.config.js";
+import { sql, getPoolPromise } from "../config/db.config.js";
 import { encode } from "../utils/Encoder.util.js";
 
 const createShortUrl = async (longUrl, userId = null) => {
-  const pool = await poolPromise;
+  const pool = await getPoolPromise();
 
   const transaction = new sql.Transaction(pool);
 

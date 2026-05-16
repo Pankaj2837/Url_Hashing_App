@@ -96,7 +96,7 @@ const Dashboard = () => {
               <tr key={i} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 font-medium text-blue-600">
                   <a
-                    href={`http://localhost:3000/api/url/${u.short_code}`}
+                    href={`http://localhost/api/url/${u.short_code}`}
                     target="_blank"
                     rel="noreferrer"
                   >

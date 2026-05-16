@@ -19,15 +19,15 @@ const dbConfig = {
   port: 1433,
 };
 
-const poolPromise = new sql.ConnectionPool(dbConfig)
-  .connect()
-  .then((pool) => {
-    console.log("Connected to MS SQL Server");
-    return pool;
-  })
-  .catch((err) => {
-    console.error("Database Connection Failed! Bad Config: ", err);
-    process.exit(1);
-  });
+// Don't connect immediately - just export config and sql
+// Connection will be established after database is ensured to exist
+let poolPromise = null;
 
-export { sql, poolPromise };
+const getPoolPromise = async () => {
+  if (!poolPromise) {
+    poolPromise = new sql.ConnectionPool(dbConfig).connect();
+  }
+  return poolPromise;
+};
+
+export { sql, getPoolPromise };

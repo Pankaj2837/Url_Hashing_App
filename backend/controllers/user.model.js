@@ -1,7 +1,7 @@
-import { sql, poolPromise } from "../config/db.config.js";
+import { sql, getPoolPromise } from "../config/db.config.js";
 
 const createUser = async (username, email, passwordHash) => {
-  const pool = await poolPromise;
+  const pool = await getPoolPromise();
   const result = await pool
     .request()
     .input("username", sql.VarChar, username)
@@ -15,7 +15,7 @@ const createUser = async (username, email, passwordHash) => {
 };
 
 const findUserByEmail = async (email) => {
-  const pool = await poolPromise;
+  const pool = await getPoolPromise();
   const result = await pool
     .request()
     .input("email", sql.VarChar, email)

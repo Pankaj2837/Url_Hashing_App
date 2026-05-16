@@ -90,6 +90,7 @@ const redirect = async (req, res) => {
 const getMyUrls = async (req, res) => {
   try {
     const userId = req.user;
+    console.log("object", req.user);
     const urls = await urlService.getUserUrls(userId);
     res.json(urls);
   } catch (err) {

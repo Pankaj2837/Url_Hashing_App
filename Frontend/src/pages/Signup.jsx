@@ -5,7 +5,7 @@ import { Lock, Mail, User, LogIn, Sparkles } from "lucide-react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
   });
