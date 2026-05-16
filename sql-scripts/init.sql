@@ -29,26 +29,28 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Users (
-        UserId INT PRIMARY KEY IDENTITY(1,1),
-        Username VARCHAR(50) NOT NULL UNIQUE,
-        PasswordHash VARCHAR(MAX) NOT NULL,
-        CreatedAt DATETIME DEFAULT GETDATE()
+        id INT PRIMARY KEY IDENTITY(1,1),
+        username VARCHAR(50) NOT NULL UNIQUE,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        passwordHash VARCHAR(MAX) NOT NULL,
+        created_at DATETIME DEFAULT GETDATE()
     );
 END
 
--- 2. Urls Table (Optimized for High-Read)
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Urls]') AND type in (N'U'))
+-- 2. URLs Table (Optimized for High-Read)
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[URLs]') AND type in (N'U'))
 BEGIN
-    CREATE TABLE Urls (
-        UrlId BIGINT PRIMARY KEY IDENTITY(1,1),
-        OriginalUrl VARCHAR(2048) NOT NULL,
-        ShortCode VARCHAR(10) COLLATE Latin1_General_BIN NOT NULL, -- Binary collation for case-sensitive Base62
-        CreatedBy INT FOREIGN KEY REFERENCES Users(UserId),
-        CreatedAt DATETIME DEFAULT GETDATE(),
-        ClickCount BIGINT DEFAULT 0
+    CREATE TABLE URLs (
+        id BIGINT PRIMARY KEY IDENTITY(1,1),
+        long_url VARCHAR(2048) NOT NULL,
+        short_code VARCHAR(10) COLLATE Latin1_General_BIN NOT NULL UNIQUE, -- Binary collation for case-sensitive Base62
+        user_id INT FOREIGN KEY REFERENCES Users(id),
+        created_at DATETIME DEFAULT GETDATE(),
+        created_by INT FOREIGN KEY REFERENCES Users(id),
+        clicks BIGINT DEFAULT 0
     );
 
     -- Optimized Index for Redirection Lookups
-    CREATE UNIQUE INDEX IX_Urls_ShortCode ON Urls(ShortCode);
+    CREATE UNIQUE INDEX IX_URLs_ShortCode ON URLs(short_code);
 END
 GO

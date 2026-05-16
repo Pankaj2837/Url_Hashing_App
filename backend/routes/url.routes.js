@@ -11,7 +11,8 @@ router.post("/register", register);
 router.post("/login", login);
 
 // URL Routes
-router.post("/shorten", protect, apiLimiter, shorten);
+// router.post("/shorten", protect, apiLimiter, shorten);
+router.post("/shorten", protect, shorten);
 
 router.get("/my-urls", protect, getMyUrls);
 

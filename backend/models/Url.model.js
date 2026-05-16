@@ -13,9 +13,9 @@ const createShortUrl = async (longUrl, userId = null) => {
     const result = await request
       .input("longUrl", sql.VarChar, longUrl)
       .input("userId", sql.Int, userId).query(`
-                INSERT INTO URLs (long_url, user_id, created_at, created_by) 
-                OUTPUT inserted.id 
-                VALUES (@longUrl, @userId, GETDATE(), @userId)
+                INSERT INTO URLs (long_url, created_by, created_at)
+                OUTPUT INSERTED.id
+                VALUES (@longUrl, @userId, GETDATE())
             `);
 
     const newId = result.recordset[0].id;
@@ -33,9 +33,10 @@ const createShortUrl = async (longUrl, userId = null) => {
     throw err;
   }
 };
+
 const getLongUrl = async (shortCode) => {
   try {
-    const pool = await poolPromise;
+    const pool = await getPoolPromise();
     const result = await pool
       .request()
       .input("shortCode", sql.VarChar, shortCode)
@@ -47,4 +48,5 @@ const getLongUrl = async (shortCode) => {
     throw err;
   }
 };
+
 export { createShortUrl, getLongUrl };

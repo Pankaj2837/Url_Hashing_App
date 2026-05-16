@@ -32,11 +32,11 @@ const login = async (req, res) => {
     const user = await findUserByEmail(email);
     if (!user) return res.status(400).json({ message: "Invalid Credentials" });
     console.log("object", user);
-    const isMatch = await bcrypt.compare(password, user.PasswordHash);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid Credentials" });
 
-    const token = jwt.sign({ userId: user.UserId }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 

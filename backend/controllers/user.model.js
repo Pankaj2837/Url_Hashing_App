@@ -7,7 +7,7 @@ const createUser = async (username, email, passwordHash) => {
     .input("username", sql.VarChar, username)
     .input("email", sql.VarChar, email)
     .input("passwordHash", sql.VarChar, passwordHash).query(`
-            INSERT INTO Users (username, email, password_hash)
+            INSERT INTO Users (username, email, passwordHash)
             OUTPUT inserted.id, inserted.username, inserted.email
             VALUES (@username, @email, @passwordHash)
         `);
@@ -19,7 +19,9 @@ const findUserByEmail = async (email) => {
   const result = await pool
     .request()
     .input("email", sql.VarChar, email)
-    .query("SELECT * FROM Users WHERE email = @email");
+    .query(
+      "SELECT id, username, email, passwordHash FROM Users WHERE email = @email",
+    );
   return result.recordset[0];
 };
 
