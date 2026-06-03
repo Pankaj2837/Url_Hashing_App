@@ -100,24 +100,6 @@ Redirect Request
 
 **Code Reference:** [Backend/controllers/url.controller.js](Backend/controllers/url.controller.js#L25)
 
-```javascript
-// Step 1: O(1) Redis lookup
-const cachedUrl = await redisClient.get(shortCode);
-if (cachedUrl) {
-  redisClient.incr(`clicks:${shortCode}`); // Non-blocking analytics
-  return res.redirect(cachedUrl);
-}
-
-// Step 2: Shard-aware SQL lookup
-const pool = await getPoolForCode(shortCode);
-const result = await pool.request()...query(...);
-
-// Step 3: Warm cache for future requests
-await redisClient.set(shortCode, longUrl, { EX: 86400 });
-```
-
----
-
 ### 3. **Write-Back Analytics: Preventing Click-Storm Lock-Ups**
 
 #### Problem Statement
@@ -169,28 +151,6 @@ Click Request (at redirect time)
 
 **Code Reference:** [Backend/services/sync.service.js](Backend/services/sync.service.js)
 
-```javascript
-// In redirect controller
-redisClient.incr(`clicks:${shortCode}`); // Fire-and-forget
-
-// In background job (runs every 5 minutes)
-const keys = await redisClient.keys("clicks:*");
-for (const key of keys) {
-  const shortCode = key.split(":")[1];
-  const clickCount = await redisClient.get(key);
-  await pool
-    .request()
-    .input("shortCode", sql.VarChar, shortCode)
-    .input("count", sql.Int, clickCount)
-    .query(
-      `UPDATE URLs SET clicks = clicks + @count WHERE short_code = @shortCode`,
-    );
-  await redisClient.set(key, 0); // Reset counter
-}
-```
-
----
-
 ### 4. **Distributed Rate Limiting: Cross-Server Consistency**
 
 #### Problem Statement
@@ -220,20 +180,7 @@ All servers share a single Redis instance:
 - **Limit:** 20 requests per IP per window
 - **Store:** Redis (shared across all backend instances)
 
-**Code Reference:** [Backend/middleware/rateLimiter.js](Backend/middleware/rateLimiter.js)
-
-```javascript
-const apiLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: async (...args) => {
-      if (!redisClient.isOpen) await redisClient.connect();
-      return redisClient.sendCommand(args);
-    },
-  }),
-  windowMs: process.env.RATE_LIMITER_TIME_WINDOW, // 15 minutes
-  max: process.env.IP_LIMIT_NUMBER_OF_REQUESTS_PER_WINDOW, // 20 requests
-});
-```
+**Code Reference:** [Backend/middleware/rateLimiter.js](Backend/middleware/rateLimiter.js
 
 **Advantages:**
 
@@ -254,19 +201,6 @@ const apiLimiter = rateLimit({
 - **Scalable:** Any server can verify any token (no state sharing needed)
 
 **Code Reference:** [Backend/middleware/auth.middleware.js](Backend/middleware/auth.middleware.js)
-
-```javascript
-const protect = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.userId;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Not authorized, token failed" });
-  }
-};
-```
 
 **Benefits:**
 
