@@ -658,7 +658,7 @@ ISC © 2024 Pankaj Yadav
 
 **Pankaj Yadav**  
 Backend Architect | Distributed Systems Engineer  
-[GitHub](https://github.com/yourusername) | [LinkedIn](https://linkedin.com/in/yourprofile)
+[GitHub](https://github.com/yourusername) | [LinkedIn](https://www.linkedin.com/in/pankaj-yadav0203/)
 
 ---
 
